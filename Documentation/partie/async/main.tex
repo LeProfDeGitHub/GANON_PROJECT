@@ -1,0 +1,24 @@
+\section{Programmation asynchrone}
+\label{sec:async}
+
+L'un des objectifs principales du logiciel est de garantir une fréquence de mesure
+des capteurs la plus élevée possible. Pour cela, le programme doit être capable
+d'effectuer plusieurs tâches en parallèle. En effet par exemple, l'envoi d'un message
+de télémesure par LoRa prend un certain temps durant lequel le programme ne doit pas
+être bloqué. Pour cela, les différentes tâches seront exécutées de manière asynchorne
+\footnote{La programmation asynchrone est un modèle de programmation qui donne l'illusion
+qu'un ordinateur effectue plusieurs tâches en parallèle, sans attendre la fin de chaque
+tâche avant de passer à la suivante.} et non nécessairement séquentiellement.\\
+
+Dans le cas de l'OMEGAAA, l'architecture asynchrone se caractérise par deux objets :
+\begin{itemize}
+    \item Les tâches : ce sont les différentes actions que le programme peut effectuer
+    en parallèle.
+    \item L'ordonanceur : c'est une structure contenant notamment les tâches à exécuter.
+\end{itemize}
+
+\input{partie/async/task.tex}
+\input{partie/async/scheduler.tex}
+\input{partie/async/exemple_1.tex}
+\input{partie/async/implementation.tex}
+\input{partie/async/exemple_2.tex}

@@ -1,0 +1,176 @@
+\subsection{Exemple 2 : Création et logique d'une tâches}
+\label{subsec:exemple_2}
+
+Afin de mieux comprendre le fonctionnement de l'ordonanceur et des tâches, un exemple
+d'implémentation est donné ci-dessous. Cet exemple est composé de deux tâches :
+\begin{itemize}
+    \item \texttt{task1} : une tâche qui créer la tâche 2 et affiche un message
+    d'état du programme.
+    \item \texttt{task2} : une tâche simulant une opération prenant du temps.
+\end{itemize}
+On suppose que la fonction \texttt{HAL\_GetTick} retourne le temps écoulé en millisecondes
+depuis le démarrage du programme.
+
+\begin{lstlisting}[style=prog, frame=shadowbox, caption={Exemple asynchrone}, label={lst:ex_async},
+    emph={[1]ASYNC_task1, ASYNC_task2, ASYNC_task1_init, ASYNC_task2_init, init_scheduler, add_task, kill_task, run_task,
+    run_scheduler, HAL_GetTick, printf}, emphstyle={[1]\color{C}},
+    emph={[2]SCHEDULER, TASK, TASK1_STATE, ASYNC_task1_CONTEXT, ASYNC_task2_CONTEXT}, emphstyle={[2]\color{E}}]
+#include <stdbool.h>
+#include "stm32f4xx_hal.h"
+#include "scheduler.h"
+
+typedef enum {
+    TASK1_INIT,
+    TASK1_WAIT,
+    TASK1_END
+} TASK1_STATE;
+
+typedef struct {
+    TASK1_STATE state;
+    bool        task2_done;
+    uint32_t    last_time;
+} ASYNC_task1_CONTEXT;
+
+typedef struct {
+    bool         started;
+    uint32_t     delay;
+    uint32_t     last_time;
+} ASYNC_task2_CONTEXT;
+
+
+void ASYNC_task1_init(TASK *task);
+void ASYNC_task2_init(TASK *task, uint32_t delay);
+void ASYNC_task1(SCHEDULER *scheduler, TASK *task);
+void ASYNC_task2(SCHEDULER *scheduler, TASK *task);
+
+
+// =========================================
+
+
+void ASYNC_task1_init(TASK *task) {
+    ASYNC_task1_CONTEXT *context = (ASYNC_task1_CONTEXT*)task->context;
+
+    context->state = TASK1_STATE_INIT;
+    context->task2_done = false;
+    context->last_time = 0;
+}
+
+void ASYNC_task2_init(TASK *task, uint32_t delay) {
+    ASYNC_task2_CONTEXT *context = (ASYNC_task2_CONTEXT*)task->context;
+
+    context->started = false;
+    context->delay = delay;
+    context->last_time = 0;
+}
+
+
+void ASYNC_task1(SCHEDULER *scheduler, TASK *task) {
+    ASYNC_task1_CONTEXT *context = (ASYNC_task1_CONTEXT*)task->context; (*@\label{lst:ex_async:start-task1}@*)
+
+    switch (context->state) {
+        case TASK1_INIT:
+            printf("Task 1 : Start\n");
+            TASK *task = add_task(scheduler, ASYNC_task2);
+            ASYNC_task2_init((ASYNC_task2_CONTEXT*)(task->context),
+                        &context->task2_done, 5000);
+            task->is_done = &(context->task2_done);     // Partage drapeau
+            context->state = TASK1_WAIT;
+            printf("Task 1 : Wait ");
+            context->last_time = HAL_GetTick();         // Initialise timer
+            break;
+        case TASK1_WAIT:
+            if (HAL_GetTick() - context->last_time > 200) {
+                context->last_time = HAL_GetTick();     // Réinitialise timer
+                printf(".");
+            }
+            if (context->task2_done) {                  // Vérifie tâche 2 terminée
+                context->state = TASK1_END;
+            }
+            break;
+        case TASK1_END:
+            printf("\nTask 1 : End\n");
+            kill_task(scheduler, task);
+            break;
+    }
+}
+
+void ASYNC_task2(SCHEDULER *scheduler, TASK *task) {
+    ASYNC_task2_CONTEXT *context = (ASYNC_task2_CONTEXT*)task->context;
+
+    if (!context->started) {
+        context->started = true;
+        context->last_time = HAL_GetTick();             // Initialise timer
+    }
+    if (HAL_GetTick() - context->last_time > context->delay) {
+        kill_task(scheduler, task);                     // Drapeau *is\_done mis à jour
+    }
+}
+
+// =========================================================
+
+int main() {
+    SCHEDULER scheduler;                                      (*@\label{lst:ex_async:start-init-scheduler}@*)
+    init_scheduler(&scheduler);                               (*@\label{lst:ex_async:end-init-scheduler}@*)
+
+    TASK *task = add_task(&scheduler, ASYNC_task1);           (*@\label{lst:ex_async:start-init-task1}@*)
+    ASYNC_task1_init((ASYNC_task1_CONTEXT*)(task->context));  (*@\label{lst:ex_async:end-init-task1}@*)
+
+    while (scheduler.length > 0) {
+        run_scheduler(&scheduler); (*@\label{lst:ex_async:run}@*)
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\newpage
+
+Cela produit le résultat suivant :
+\begin{lstlisting}[style=terminal, frame=shadowbox, caption={Résultat xemple asynchrone}, label={lst:res_ex_async}]
+Task 1 : Start
+Task 1 : Wait .........................
+Task 1 : End
+\end{lstlisting}
+
+\begin{minipage}{0.95\textwidth}
+\begin{wrapfigure}{L}{0.35\textwidth}
+\vspace{0.5cm}
+\input{graphique/ex_async_timline.tex}
+\caption{Chronologie de l'exemple de programmation asynchrone}
+\end{wrapfigure}
+
+La figure ci-contre montre la chronologie de l'exemple. A noter que le temps
+d'exécution est donné à titre indicatif et ne correspond pas à une échelle de temps réelle.
+
+\vspace{0.5cm}
+
+Le programme commence par créer et initialiser l'ordonanceur (ligne \ref{lst:ex_async:start-init-scheduler}
+-\ref{lst:ex_async:end-init-scheduler}). C'est à dire que de la mémoire est alloué pour les tâches, que les
+éléments du tableau \texttt{running} sont tous mis à \texttt{false} et que les autres variables de
+l'ordonanceur sont également initialisées.
+Ensuite, la tâche 1 est créée et ajoutée à l'ordonanceur. Cela est réalisé par l'appelle de la fonction
+\texttt{add\_task}. Cette fonction cherche la première place libre dans la zone mémoire allouée à cet effet
+dans le tas, initialise une nouvelle tâche à cet endroit et renvoie un pointeur vers cette dernière.
+Le context de la tâche est ensuite initialisé par sa fonction relative (ici\newline \texttt{ASYNC\_task1\_init})
+(lignes \ref{lst:ex_async:start-init-task1}-\ref{lst:ex_async:end-init-task1}).
+Enfin, le programme entre dans une boucle et exécute la fonction \texttt{run\_scheduler} tant que
+des tâches se trouvent active dans l'ordonanceur.
+
+Au début de l'exécution, seule la tâche 1 se trouve active, elle est alors exécutée. Ligne
+\ref{lst:ex_async:start-task1}, le contexte d'exécution de la tâche 1 est récupéré et l'état de la tâche
+est vérifié. La plupart des tâches sont des machines à états finis \footnotemark. Dans le cas de la tâche
+1, elle se trouve au début dans l'état \texttt{TASK1\_INIT}, elle affiche donc le message "Task 1 : Start",
+créer la tâche 2 en l'ajoutant à l'ordonanceur, affiche "Task 1 : Wait" et passe à l'état \texttt{TASK1\_WAIT}.
+
+La tâche 1 est alors mise en pause et la tâche 2 est exécutée. Cette dernière est une tâche simulant
+une opération prenant du temps. Elle démarre tout d'abord un timer de 5000 ms et vérifie à chaque nouvelle
+exécution si ce temps s'est écoulé. Lorsque c'est le cas, la tâche 2 se retire de l'ordonanceur. Quand la
+tâche 1 détecte la fin d'exéctution de la tâche 2 (via la mise à jour du drapeau "\texttt{task2\_done}"), elle
+affiche "Task 1 : End" et se retire également de l'ordonanceur. Dans le cas contraire, la tâche 1 continue
+d'afficher des points toutes les 200 ms grâce à un timer propre. Ainsi, 25 points sont affichés correspondant
+à un point toutes les 200 ms pendant 5 secondes. 
+
+\end{minipage}
+
+\footnotetext{Machine à état : Une machine à état (ou automate fini) est un modèle de calcul utilisé pour
+représenter des systèmes avec un nombre fini d'états. Ce modèle est utilisé dans divers domaines comme les
+protocoles de communication, les jeux vidéo, les systèmes embarqués, etc.}

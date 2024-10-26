@@ -1,0 +1,66 @@
+% \setcounter{page}{1}
+\section*{Mise en contexte}
+\addcontentsline{toc}{section}{\protect\numberline{}Mise en contexte}
+
+Ce document a pour but de présenter l'OMEGAAA, un concepte d'ordinateur de bord
+pour une fusée amateur. Le projet a été mené par Alexis Paillard et se base en
+majeur partie sur le projet Unknown réalisé dans le cadre de l'association
+AeroIPSA.\\
+
+\subsection*{- AeroIPSA}
+AéroIPSA est une association étudiante de l'école d'ingénieurs IPSA qui conçoit et
+réalise entièrement des projets fonctionnels en rapport avec le secteur
+aérospatial. Elle rassemble des étudiants autour de projets d'astromodélisme,
+principalement de lanceurs, mais aussi de Cansats (micro-satellites atmosphérique).
+Cela permet aux différents membres de l'association d'appliquer les notions
+apprises durant leur cursus au profit d'un projet d'envergure et d'acquérir les
+compétences nécessaires dans leur futur métier d'ingénieur.\\
+
+\subsection*{- Unknown}
+Unknown est un projet de module électronique de fusée expérimentale réalisé par
+Vincent Fauquembergue et Alexis Paillard. Les expériences du projet Unknown ont été
+les suivantes :
+\begin{itemize}
+    \item \textbf{Expérience principale} : Relocaliser une fusée après son lancement
+    grâce à un module de télémesure LoRa renvoyant les données GNSS tout au long du
+    vol.
+    \item \textbf{Expérience secondaire} : Réalisation d'une collecte de données
+    provenant de nombreux capteurs, barométrique et centrale inertielle, afin de
+    reconstituer le vol après récupération des données stockées sur une mémoire
+    flash.
+\end{itemize}
+L'un des objectifs du projet Unknown était de réaliser un module électronique se
+voyant plus facilement intégrable dans une fusée amateur. Cela s'est traduit par
+l'utilisation d'une seule carte électronique ayant tous ses composants directement
+soudés dessus ainsi que l'utilisation d'un microcontrôleur autre que l'Arduino ou
+que la Teensy. Le choix fait s'est porté sur un STM32F4 de STMicroelectronics. La
+programmation de ce microcontrôleur a été réalisée en C et un bon nombre des
+drivers nécessaires ont dû être réadapté par les membres du projet ce qui a permis
+d'acquérir de nouvelles compétences en programmation bas niveau.
+
+L'annexe \ref{anx:unknown} présente le rapport du projet Unknown ainsi que des
+photos du module.
+
+\subsection*{- OMEGAAA}
+OMEGAAA est l'acronyme de \textbf{O}rdinateur de \textbf{M}esure,
+d'\textbf{E}valuation, de \textbf{G}estion et d'\textbf{A}nalyse pour
+l'\textbf{A}éro-nautique et l'\textbf{A}érospatiale. Il s'agit d'un concepte
+d'ordinateur de bord qui a pour but de gérer les différentes phases de vol d'une
+fusée amateur, tout en effectuant des mesures notamment d'accélérations et de
+vitesses de rotation (à l'aide d'un IMU). Ces données sont ensuite traitées pour en
+extraire la position et l'attitude de la fusée et enregistrées dans une mémoire.
+L'OMEGAA gère également une communication par télémétrie avec une station au sol.
+
+Ce module fait suite au projet Unknown en reprenant les composants électroniques de
+ce dernier. Il a pour but de continuer à développer les compétences en
+programmation acquises lors du projet Unknown et d'en développer de nouvelle comme
+la création du RTOS \footnote{Un RTOS (\textbf{R}eal \textbf{T}ime
+\textbf{O}perating \textbf{S}ystem)  est un système d'exploitation conçu pour gérer
+les ressources matérielles de manière à garantir que des tâches critiques soient
+exécutées parallèlement à d'autre et dans des délais stricts et prévisibles.
+Ce type de système est laregement employé dans des application tels que les systèmes
+embarqués, les dispositifs médicaux, les systèmes de contrôle industriel, et les
+applications aéronautiques et aérospatiales...}. Cet ordinateur de bord étant
+fictif, il n'a pas été réalisé mais l'ensemble des travaux et des recherches
+effectuées pour sa conception sont présentées dans ce document et ont pour but de
+servir de support pour la réalisation d'un tel module électronique.\\

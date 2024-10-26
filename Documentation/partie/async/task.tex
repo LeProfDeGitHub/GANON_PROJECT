@@ -1,0 +1,19 @@
+\subsection{Une tâche (TASK)}
+\label{subsec:task}
+
+Contrairement à une fonction classique, une tâche est une fonction qui peut commencer,
+interrompre et reprendre son exécution en plusieurs temps. Dans l'OMEGAAA, une tâche se
+matérialise par une structure de données contenant trois éléments : une fonction classique
+(\texttt{func}\footnote{\label{footnote:ref_async_h}cf Code \ref{lst:async_h}}), un indice
+de référence(\texttt{idx}\footnoteref{footnote:ref_async_h}) et une sous-structure de données
+appelée "contexte d'exécution" (\texttt{context}\footnoteref{footnote:ref_async_h}).
+Le contexte d'exécution contient les informations nécessaires pour reprendre l'exécution de
+la tâche là où elle s'était arrêtée auparavant.
+
+Par simplicité et pour des raisons de performances, bien que chaque type de tâche a besoin
+d'un contexte d'exécution unique, \texttt{context} est une zone mémoire de taille fixe.
+Cette taille est définie par la constante \texttt{ASYNC\_CONTEXT\_DEFAULT\_BYTES\_SIZE}
+\footnoteref{footnote:ref_async_h} et est par défaut de 64 octets. Cela permet d'uniformiser
+la structure de toutes les tâches. Cette taille doit être suffisante pour contenir le contexte
+d'exécution de n'importe quelle tâche et doit être redéfini en fonction des besoin du programme
+tout en considérant les limites de mémoire du microcontrôleur.

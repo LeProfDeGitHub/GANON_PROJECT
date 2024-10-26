@@ -1,0 +1,5 @@
+C:/Users/alexi/Documents/code/STM32/GANON_v0.1/CMakeFiles/GANON_v0.1.dir
+C:/Users/alexi/Documents/code/STM32/GANON_v0.1/CMakeFiles/edit_cache.dir
+C:/Users/alexi/Documents/code/STM32/GANON_v0.1/CMakeFiles/rebuild_cache.dir
+C:/Users/alexi/Documents/code/STM32/GANON_v0.1/cmake/stm32cubemx/CMakeFiles/edit_cache.dir
+C:/Users/alexi/Documents/code/STM32/GANON_v0.1/cmake/stm32cubemx/CMakeFiles/rebuild_cache.dir

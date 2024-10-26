@@ -1,0 +1,368 @@
+\subsection{Mémoire Flash W25Q\_XXX}
+\label{subsec:w25q}
+
+La mémoire flash W25Q\_XXX est un composant de stockage de données non volatiles
+de la marque Winbond. Elle est utilisée dans le projet OMEGAAA pour stocker les
+données acquises par les capteurs. La mémoire flash W25Q\_XXX utilise une interface
+SPI pour communiquer avec le microcontrôleur. Elle est composé de plusieurs blocs
+de mémoire appelés secteurs. Chaque secteur est composé de 16 pages de 256 octets,
+soit 4 Ko par secteur. La mémoire flash W25Q\_XXX dispose de plusieurs commandes
+permettant nottamant de lire, écrire, effacer des données, de connaitre et modifier
+l'état du composant.\\
+
+Les fichiers correspondant à la gestion de la mémoire flash W25Q\_XXX sont les
+suivants :
+
+\begin{itemize}
+    \item \texttt{w25q\_mem.h} : Déclaration des structures et des fonctions
+    \item \texttt{w25q\_mem.c} : Implémentation des fonctions
+\end{itemize}
+
+\subsubsection{Déclaration des structures et des fonctions}
+
+\subsubsubsection*{\texttt{W25Q\_Chip}}
+
+La structure contient les informations nécessaires pour communiquer avec la
+mémoire flash et pour gérer son état.
+
+\begin{lstlisting}[style=prog, frame=shadowbox, label={lst:w25q_dec},
+    emph={[1]W25Q_Init}, emphstyle={[1]\color{C}},
+    emph={[2]GPIO_TypeDef, W25Q_Chip, SPI_HandleTypeDef_flag}, emphstyle={[2]\color{E}}]
+typedef struct W25Q_Chip {
+	SPI_HandleTypeDef_flag *hspi_flag;
+	GPIO_TypeDef           *csPinBank;
+	uint16_t                csPin;
+	bool                    status_bits[24];
+	bool                    ASYNC_busy;
+} W25Q_Chip;
+
+void W25Q_Init(W25Q_Chip              *w25q_chip,
+               SPI_HandleTypeDef_flag *hspi_flag,
+               GPIO_TypeDef           *csPinBank,
+               uint16_t                csPin,
+               uint32_t                id);
+\end{lstlisting}
+
+Les trois premiers champs de la structure \texttt{W25Q\_Chip} sont des informations
+nécessaires pour la communication SPI.
+
+Le tableau \texttt{status\_bits} contient les bits d'état de la mémoire flash. Ces
+bits servent par exemple à indiquer si la mémoire flash est occupée par une
+opération interne. En effet, lorsque la mémoir flash est en train d'écrire ou
+d'effacer des données, elle ne peut pas effectuer d'autres opérations et ainsi bons
+nombre de commandes envoyer ne seront pas pris en compte par le composant.
+
+Le champ \texttt{ASYNC\_busy} est un booléen qui indique si la mémoire flash est
+occupée par une opération asynchrone. Cela permet d'assurer que certaines tâches
+asynchrones, puissent s'executer une par une et non pas en parallèle.
+
+La fonction \texttt{W25Q\_Init} permet d'initialiser la structure \texttt{W25Q\_Chip}
+avec les informations nécessaires pour communiquer avec la mémoire flash. Elle
+prend en paramètre un pointeur vers la structure \texttt{W25Q\_Chip}, les informations
+nécessaires pour la communication SPI ainsi que l'identifiant de la mémoire flash
+W25Q\_XXX. L'identifiant est utilisé pour vérifier le bon fonctionnement de la
+communication SPI avec la mémoire flash.
+
+\newpage
+
+\subsubsubsection*{\texttt{ASYNC\_W25Q\_ReadStatusReg} : }
+
+La tâche \texttt{ASYNC\_W25Q\_ReadStatusReg} permet de lire les bits d'état de la
+mémoire flash. La mémoire flash W25Q\_XXX disposant de trois registres d'état, cette
+tâche envoie trois commandes de lecture pour récupérer les bits d'état de chacun des
+registres. Elle mettera ensuite à jour le tableau \texttt{status\_bits} de la
+structure \texttt{W25Q\_Chip} passée au préalable en paramètre.
+
+\begin{lstlisting}[style=prog, frame=shadowbox, label={lst:ASYNC_W25Q_ReadStatusReg},
+    emph={[1]ASYNC_W25Q_ReadStatusReg_init, ASYNC_W25Q_ReadStatusReg}, emphstyle={[1]\color{C}},
+    emph={[2]W25Q_Chip, SCHEDULER, TASK}, emphstyle={[2]\color{E}}]
+void ASYNC_W25Q_ReadStatusReg_init(TASK *task, W25Q_Chip *w25q_chip);
+void ASYNC_W25Q_ReadStatusReg(SCHEDULER *scheduler, TASK *self);
+\end{lstlisting}
+
+La tâche se termine lorsque tous les bits d'état ont été lus et stockés dans le
+tableau \texttt{status\_bits}.
+
+% \vfill
+
+\subsubsubsection*{\texttt{ASYNC\_W25Q\_WriteEnable} : }
+
+La tâche \texttt{ASYNC\_W25Q\_WriteEnable} permet d'activer l'écriture dans la
+mémoire flash. En effet, avant de pouvoir écrire ou d'effacer des données, il est
+nécessaire qu'un certain bit d'état se trouvant dans un registre de la mémoire flash
+soit activé. Cette tâche envoie la commande d'activation de l'écriture à la mémoire
+flash.
+
+\begin{lstlisting}[style=prog, frame=shadowbox, label={lst:ASYNC_W25Q_WriteEnable},
+    emph={[1]ASYNC_W25Q_WriteEnable_init, ASYNC_W25Q_WriteEnable}, emphstyle={[1]\color{C}},
+    emph={[2]W25Q_Chip, SCHEDULER, TASK}, emphstyle={[2]\color{E}}]
+void ASYNC_W25Q_WriteEnable_init(TASK *task, W25Q_Chip *w25q_chip);
+void ASYNC_W25Q_WriteEnable(SCHEDULER *scheduler, TASK *self);
+\end{lstlisting}
+
+La tâche se termine lorsque l'envoie de la commande d'activation a été programmé
+dans le scheduler. Cependant, pendant l'exécution de la tâche, cette dernière
+transfert le pointeur \texttt{self->is\_done} à la tâche se chargeant de l'envoie de
+la commande. Ainsi, lorsque l'entité génératrice de la tâche
+\texttt{ASYNC\_W25Q\_WriteEnable} détecte la fin de son exécution, cela revient à
+détecter que la commande s'est rélement bien envoyé. (Cette technique est utilisé 
+afin d'optimiser le nombre de tâche en cours d'exécution.) 
+
+% \vfill
+
+\subsubsubsection*{\texttt{ASYNC\_W25Q\_WaitForReady} : }
+
+La tâche \texttt{ASYNC\_W25Q\_WaitForReady} permet d'attendre que la mémoire flash
+soit prête à écrire ou à effacer des données. Elle appelle la tâche
+\texttt{ASYNC\_W25Q\_ReadStatusReg} pour lire les bits d'état de la mémoire flash
+jusqu'à ce que le bit d'état indiquant que la mémoire flash est occupée soit à 0.
+
+\begin{lstlisting}[style=prog, frame=shadowbox, label={lst:ASYNC_W25Q_WaitForReady},
+    emph={[1]ASYNC_W25Q_WaitForReady_init, ASYNC_W25Q_WaitForReady}, emphstyle={[1]\color{C}},
+    emph={[2]W25Q_Chip, SCHEDULER, TASK}, emphstyle={[2]\color{E}}]
+void ASYNC_W25Q_WaitForReady_init(TASK *task, W25Q_Chip *w25q_chip);
+void ASYNC_W25Q_WaitForReady(SCHEDULER *scheduler, TASK *self);
+\end{lstlisting}
+
+La tâche se termine lorsque le bit d'état indiquant que la mémoire flash est occupée
+est à 0.
+
+% \vfill
+
+\subsubsubsection*{\texttt{ASYNC\_W25Q\_EraseSectore} : }
+
+La tâche \texttt{ASYNC\_W25Q\_EraseSectore} permet d'effacer un secteur de la mémoire
+flash. Elle envoie la commande d'effacement d'un secteur à la mémoire flash. A noter
+que la tâche attend d'abord que le booléen \texttt{ASYNC\_busy} de la structure
+\texttt{W25Q\_Chip} soit faux avant de s'executer proprement et le met ensuite à vrai.
+
+\begin{lstlisting}[style=prog, frame=shadowbox, label={lst:ASYNC_W25Q_EraseSectore},
+    emph={[1]ASYNC_W25Q_EraseSectore_init, ASYNC_W25Q_EraseSectore}, emphstyle={[1]\color{C}},
+    emph={[2]W25Q_Chip, SCHEDULER, TASK}, emphstyle={[2]\color{E}}]
+void ASYNC_W25Q_EraseSectore_init(TASK *task, W25Q_Chip *w25q_chip, uint32_t addr);
+void ASYNC_W25Q_EraseSectore(SCHEDULER *scheduler, TASK *self);
+\end{lstlisting}
+
+La tâche se termine lorsque l'envoie de la commande d'effacement s'est bien déroulé.
+Elle mettra alors le booléen \texttt{ASYNC\_busy} à faux avant de disparaitre.
+
+% \vfill
+
+\subsubsubsection*{\texttt{ASYNC\_W25Q\_EraseAll} : }
+
+La tâche \texttt{ASYNC\_W25Q\_EraseAll} permet d'effacer toute la mémoire flash. Elle
+envoie la commande d'effacement de toute la mémoire flash à la mémoire flash. A noter
+que la tâche attend d'abord que le booléen \texttt{ASYNC\_busy} de la structure
+\texttt{W25Q\_Chip} soit faux avant de s'executer proprement et le met ensuite à vrai.
+L'opération d'effacement de toute la mémoire flash est une opération longue qui peut
+dépendant de la taille de la mémoire flash prendre plusieurs dizaines de secondes.
+
+\begin{lstlisting}[style=prog, frame=shadowbox, label={lst:ASYNC_W25Q_EraseAll},
+    emph={[1]ASYNC_W25Q_EraseAll_init, ASYNC_W25Q_EraseAll}, emphstyle={[1]\color{C}},
+    emph={[2]W25Q_Chip, SCHEDULER, TASK}, emphstyle={[2]\color{E}}]
+void ASYNC_W25Q_EraseAll_init(TASK *task, W25Q_Chip *w25q_chip);
+void ASYNC_W25Q_EraseAll(SCHEDULER *scheduler, TASK *self);
+\end{lstlisting}
+
+La tâche se termine lorsque l'envoie de la commande d'effacement s'est bien déroulé.
+Elle mettra alors le booléen \texttt{ASYNC\_busy} à faux avant de disparaitre.
+
+\subsubsubsection*{\texttt{ASYNC\_W25Q\_ReadData} : }
+
+La tâche \texttt{ASYNC\_W25Q\_ReadData} permet de lire un certain nombre d'octets
+dans la mémoire flash à partir d'une adresse donnée. Elle envoie la commande de
+lecture de données à la mémoire flash. A noter que la tâche attend d'abord que le
+booléen \texttt{ASYNC\_busy} de la structure \texttt{W25Q\_Chip} soit faux avant de
+s'executer proprement et le met ensuite à vrai.
+
+\begin{lstlisting}[style=prog, frame=shadowbox, label={lst:ASYNC_W25Q_ReadData},
+    emph={[1]ASYNC_W25Q_ReadData_init, ASYNC_W25Q_ReadData}, emphstyle={[1]\color{C}},
+    emph={[2]W25Q_Chip, SCHEDULER, TASK}, emphstyle={[2]\color{E}}]
+void ASYNC_W25Q_ReadData_init(TASK      *task,
+                              W25Q_Chip *w25q_chip,
+                              uint8_t   *data,
+                              uint32_t   addr,
+                              uint32_t   data_size);
+void ASYNC_W25Q_ReadData(SCHEDULER *scheduler, TASK *self);
+\end{lstlisting}
+
+Le paramètre \texttt{data} est un pointeur vers un tableau d'octets qui contiendra
+les données lues. Le paramètre \texttt{addr} est l'adresse à partir de laquelle les
+données seront lues. Le paramètre \texttt{data\_size} est le nombre d'octets à lire.
+La tâche requiert que le tableau \texttt{data} soit alloué, que sa taille soit
+suffisante pour contenir les données lues et qu'il reste en mémoire jusqu'à la fin
+de l'exécution de la tâche. La tâche se termine lorsque l'envoie de la commande de lecture s'est bien déroulé.
+Elle mettra alors le booléen \texttt{ASYNC\_busy} à faux avant de disparaitre.
+
+
+\subsubsubsection*{\texttt{ASYNC\_W25Q\_PageProgram} : }
+
+La tâche \texttt{ASYNC\_W25Q\_PageProgram} permet d'écrire un certain nombre d'octets
+dans la mémoire flash à partir d'une adresse donnée. L'opération d'écriture ne permet
+d'écrire que sur des données préalablement effacées et seulement sur une page de 256
+octets. Si l'utilisateur tente d'écrire plus de données que la taille restante de la
+page, la tâche écrira uniquement les données qui peuvent tenir dans la page. A noter
+que la tâche attend d'abord que le booléen \texttt{ASYNC\_busy} de la structure
+\texttt{W25Q\_Chip} soit faux avant de s'executer proprement et le met ensuite à vrai.
+
+\begin{lstlisting}[style=prog, frame=shadowbox, label={lst:ASYNC_W25Q_PageProgram},
+    emph={[1]ASYNC_W25Q_PageProgram_init, ASYNC_W25Q_PageProgram}, emphstyle={[1]\color{C}},
+    emph={[2]W25Q_Chip, SCHEDULER, TASK}, emphstyle={[2]\color{E}}]
+void ASYNC_W25Q_PageProgram_init(TASK       *task,
+                                 W25Q_Chip  *w25q_chip,
+                                 uint8_t    *data,
+                                 uint32_t    addr,
+                                 uint16_t    data_size);
+void ASYNC_W25Q_PageProgram(SCHEDULER *scheduler, TASK *self);
+\end{lstlisting}
+
+Le paramètre \texttt{data} est un pointeur vers un tableau d'octets qui contient les
+données à écrire. Le paramètre \texttt{addr} est l'adresse à partir de laquelle les
+données seront écrite. Le paramètre \texttt{data\_size} est le nombre d'octets à
+écrire. La tâche effectue une copie des données à écrire dans un tableau interne
+au moment de son initialisation. Il n'est donc pas nécessaire de conserver le tableau
+\texttt{data} en mémoire jusqu'à la fin de l'exécution de la tâche. La tâche se
+termine lorsque l'envoie de la commande d'écriture s'est bien déroulé. Elle mettra
+alors le booléen \texttt{ASYNC\_busy} à faux avant de disparaitre.
+
+\subsubsubsection*{\texttt{ASYNC\_W25Q\_WriteData} : }
+
+La tâche \texttt{ASYNC\_W25Q\_WriteData} permet d'écrire un certain nombre d'octets
+dans la mémoire flash à partir d'une adresse donnée en permettant d'écrire sur
+plusieurs pages. 
+
+\begin{lstlisting}[style=prog, frame=shadowbox, label={lst:ASYNC_W25Q_WriteData},
+    emph={[1]ASYNC_W25Q_WriteData_init, ASYNC_W25Q_WriteData}, emphstyle={[1]\color{C}},
+    emph={[2]W25Q_Chip, SCHEDULER, TASK}, emphstyle={[2]\color{E}}]
+void ASYNC_W25Q_WriteData_init(TASK      *task,
+                               W25Q_Chip *w25q_chip,
+                               uint8_t   *data_buf,
+                               uint32_t   addr,
+                               uint32_t   data_size);
+void ASYNC_W25Q_WriteData(SCHEDULER *scheduler, TASK *self);
+\end{lstlisting}
+
+Le paramètre \texttt{data\_buf} est un pointeur vers un tableau d'octets qui contient
+les données à écrire. Le paramètre \texttt{addr} est l'adresse à partir de laquelle
+les données seront écrite. Le paramètre \texttt{data\_size} est le nombre d'octets à
+écrire. La tâche effectue une copie des données à écrire dans un tableau interne
+au moment de son initialisation. Il n'est donc pas nécessaire de conserver le tableau
+\texttt{data\_buf} en mémoire jusqu'à la fin de l'exécution de la tâche. La tâche
+découpe les données à écrire enplusieurs pages de 256 octets et appelle la tâche
+\texttt{ASYNC\_W25Q\_PageProgram} pour écrire dans chacune des pages. La tâche se
+termine lorsque toutes les pages ont été écrites. [SCHEMA NECESSAIRE ?]
+
+\subsubsection{Exemple d'utilisation}
+
+Illustrons l'utilisation de la mémoire flash W25Q\_XXX avec un exemple simple. Dans
+cet exemple, nous allons simplement écrire et lire des données dans la mémoire flash.
+
+\begin{lstlisting}[style=prog, frame=shadowbox, caption={Exemple d'utilisation de la mémoire flash W25Q\_XXX}, label={lst:w25q_example},
+    emph={[1]main, W25Q_Init, ASYNC_W25Q_WriteData_init, ASYNC_W25Q_WriteData, ASYNC_W25Q_ReadData_init, ASYNC_W25Q_ReadData, init_scheduler, add_task, run_scheduler}, emphstyle={[1]\color{C}},
+    emph={[2]STATUS, W25Q_Chip, SCHEDULER, TASK}, emphstyle={[2]\color{E}}]
+#include "w25q_mem.h"
+#include "scheduler.h"
+
+
+typedef enum STATUS {
+    INIT,
+    WRITE,
+    READ,
+    STOP
+} STATUS;
+
+
+void main() {
+    W25Q_Chip w25q_chip;
+    W25Q_Init(&w25q_chip, &hspi1_flag, GPIOA, GPIO_PIN_4, W25Q_ID);
+    
+    SCHEDULER scheduler;
+    init_scheduler(&scheduler);
+
+    STATUS status = INIT;
+
+    bool is_done = false;
+
+    uint8_t data_write[256*4] = {...};
+    uint8_t data_read[256*5] = {0};
+
+
+    while (1) {
+        switch (status) {
+        case INIT: {
+            TASK *task_write = add_task(&scheduler, ASYNC_W25Q_WriteData);
+            ASYNC_W25Q_WriteData_init(task_write, &w25q_chip,
+                                      data_write, 0, 256*4);
+            task_write->is_done = &is_done;
+            status = WRITE;
+            break;}
+        case WRITE: {
+            if (is_done) {
+                is_done = false;
+                TASK *task_read = add_task(&scheduler, ASYNC_W25Q_ReadData);
+                ASYNC_W25Q_ReadData_init(task_read, &w25q_chip,
+                                         data_read, 0, 256*5);
+                task_read->is_done = &is_done;
+                status = READ;
+            }
+            break;}
+        case READ: {
+            if (task_read->is_done) {
+                // Can do something with data\_read here
+                status = STOP;
+            }
+            break;}
+        case STOP: { break; }
+        }
+        run_scheduler(&scheduler);
+    }
+}
+\end{lstlisting}
+
+
+
+\begin{minipage}{0.95\textwidth}
+\begin{wrapfigure}{L}{0.45\textwidth}
+\vspace{-0.8cm}
+\dirtree{%
+    .0 .
+    .1 ASYNC\_W25Q\_WriteData.
+        .2 ASYNC\_W25Q\_PageProgram.
+            .3 ASYNC\_W25Q\_WaitForReady.
+                .4 ASYNC\_W25Q\_ReadStatusReg.
+                    .5 ASYNC\_SPI\_TxRx\_DMA.
+                    .5 ASYNC\_SPI\_TxRx\_DMA.
+                    .5 ASYNC\_SPI\_TxRx\_DMA.
+            .3 ASYNC\_W25Q\_WriteEnable.
+                .4 ASYNC\_SPI\_TxRx\_DMA.
+            .3 ASYNC\_SPI\_TxRx\_DMA.
+        .2 ASYNC\_W25Q\_PageProgram (répété par le nbr de page à écrire).
+    .1 ASYNC\_W25Q\_ReadData.
+        .2 ASYNC\_W25Q\_WaitForReady.
+            .3 ASYNC\_W25Q\_ReadStatusReg.
+                .4 ASYNC\_SPI\_TxRx\_DMA.
+                .4 ASYNC\_SPI\_TxRx\_DMA.
+                .4 ASYNC\_SPI\_TxRx\_DMA.
+        .2 ASYNC\_SPI\_TxRx\_DMA.
+}
+\caption{Arboressance des tâches pour l'exemple \ref{lst:w25q_example}}
+\end{wrapfigure}
+
+Ce programme est une machine à état qui écrit des données dans la mémoire flash,
+puis les lit et enfin s'arrête. La fonction \texttt{main} initialise la mémoire
+flash et le scheduler. Elle crée ensuite une tâche pour écrire des données dans la
+mémoire flash. Lorsque la tâche est terminée, elle crée une tâche pour lire les
+données écrites. Lorsque la tâche de lecture est terminée, le programme ne fait
+plus rien.
+
+\vspace{0.5cm}
+
+L'arboressance des tâches pour cet exemple est représentée dans le schéma ci-contre.
+On peut voir alors que l'écriture de données dans la mémoire flash est une opération
+complexe qui nécessite plusieurs tâches pour s'executer. En effet, l'appelle
+à la tâche \texttt{ASYNC\_W25Q\_PageProgram} entraine la génération de 8 sous-tâches.
+On peut donc voir l'importance de la gestion des tâches asynchrones et la nécessité
+d'avoir une pleine conscience de l'arboressance des tâches pour éviter d'être à cours
+de ressources.
+
+\end{minipage}

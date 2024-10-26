@@ -1,0 +1,26 @@
+{
+    "files.associations": {
+        "BMI088.h": "c",
+        "BMP388.h": "c",
+        "buzzer.h": "c",
+        "gps.h": "c",
+        "rfm96w.h": "c",
+        "w25q_mem.h": "c",
+        "dma.h": "c",
+        "gpio.h": "c",
+        "i2c.h": "c",
+        "spi.h": "c",
+        "tim.h": "c",
+        "usart.h": "c",
+        "math.h": "c",
+        "string.h": "c",
+        "stdio.h": "c",
+        "usb_device.h": "c",
+        "usbd_cdc_if.h": "c",
+        "stdbool.h": "c",
+        "tools.h": "c",
+        "stm32f4xx_hal.h": "c",
+        "compare": "cpp"
+    },
+    "cortex-debug.variableUseNaturalFormat": true
+}

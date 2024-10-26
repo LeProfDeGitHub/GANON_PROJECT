@@ -1,0 +1,100 @@
+\section{Projet STM}
+
+Le programme de l'OMEGAAA est écrit à l'aide de l'environnement de développement
+STMicroelectronics. Ce dernier permet de créer des projets pour les microcontrôleurs
+de la firme. Chaque projets est composé de plusieurs sous-dossiers et fichiers. Le
+HAL\footnote{HAL (pour \textbf{H}ardware \textbf{A}bstraction \textbf{L}ayer) est
+une bibliothèque logicielle qui fournit une interface de programmation pour les
+périphériques matériels.} fournit par STMicroelectronics étant écrit en C, et que
+bons nombres d'information, tutoriels et exemples sont disponibles en C, le programme
+de l'OMEGAAA utilisera ce language.
+
+
+\begin{minipage}{0.95\textwidth}
+    \begin{wrapfigure}{L}{0.35\textwidth}
+    \vspace{-1.0cm}
+    \dirtree{%
+    .1 ....
+    .1 Core.
+        .2 Inc.
+            .3 ....
+        .2 Src.
+            .3 drivers.
+                .4 BMI088.c.
+                .4 BMP388.c.
+                .4 buzzer.c.
+                .4 gps.c.
+                .4 rfm96w.c.
+                .4 w25q\_mem.c.
+                .4 ....
+            .3 peripherals.
+                .4 dma.c.
+                .4 gpio.c.
+                .4 i2c.c.
+                .4 spi.c.
+                .4 tim.c.
+                .4 usart.c.
+                .4 ....
+            .3 flash\_stream.c.
+            .3 main.c.
+            .3 scheduler.c.
+            .3 tools.c.
+            .3 ....
+            .3 stm32f4xx\_hal\_msp.c.
+            .3 stm32f4xx\_it.c.
+            .3 syscalls.c.
+            .3 sysmem.c.
+            .3 system\_stm32f4xx.c.
+    .1 ....
+    }
+    \caption{Arboressance du programme}
+    \end{wrapfigure}
+    
+    \vspace{1.0cm}
+    
+    L'intégralité du programme de l'OMEGAAA se trouve dans le dossier
+    "\texttt{Core}". Ce dernier est composé des fichiers de déclarations (.h) dans
+    le dossier \texttt{Inc} et des fichiers de programme (.c) dans le dossier
+    \texttt{Src}. Tous     les programmes relatifs aux composants externes au
+    microcontrôleur (capteurs, ...) se trouve dans le dossier \texttt{drivers} et
+    ceux relatifs à la gestion des composants internes (gestionnaires des
+    périphériques, ...) dans \texttt{peripherals}.
+    
+    \vspace{0.5cm}
+    
+    On retrouve dans le dossier \texttt{Inc} symétriquement la même arboressance de
+    dossiers et fichiers que dans le dossier \texttt{Src} à l'extention près (non
+    des "\texttt{.c}" mais des "\texttt{.h}").
+    
+    \vspace{0.5cm}
+    
+    Le point d'entrée du programme se trouve dans la fonction \texttt{main} du
+    fichier du même nom.
+    
+    
+    \vspace{0.2cm}
+    Le fichier \texttt{scheduler.c} contient l'implémentation de l'ordonanceur et
+    la définition d'une tâche (cf. \ref{subsec:implementation}).
+
+    
+    \vspace{0.2cm}
+    Le fichier \texttt{flash\_stream.c} contient les structures et fonctions
+    permettant de lire et d'écrire des données dans une mémoire tout en gérant
+    les pointeurs de lecture et d'écriture.
+
+    
+    \vspace{0.2cm}
+    Le fichier \texttt{tools.c} contient des fonctions utilisées à différents
+    endroits du programme.
+
+    \vspace{0.5cm}
+
+    Enfin, les fichiers \texttt{stm32f4xx\_hal\_msp.c},
+    \texttt{stm32f4xx\_it.c}, \texttt{syscalls.c}, \texttt{sysmem.c} et
+    \texttt{system\_stm32f4xx.c} sont des fichiers de configuration,
+    de gestion des interruptions, de gestion de la mémoire et de gestion
+    du système général du microcontrôleur. Ces fichiers sont générés
+    automatiquement par l'environnement de développement et bien qu'ils le
+    peuvent, ils ne seront pas modifiés par l'utilisateur.
+    
+\end{minipage}

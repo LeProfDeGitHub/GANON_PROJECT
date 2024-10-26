@@ -1,0 +1,30 @@
+\includepdf[pages=1,frame,scale=.75, offset = 0 -1.7cm,
+pagecommand={
+\section{Projet Unknown}
+\label{anx:unknown}
+\subsection{Rapport du projet}
+Le domcument suivant peut être retrouver en annexe du rapport du
+projet SP-01, projet de fusée amateur dans lequel le module Unknown
+a été intégré. (cf. https://www.aeroipsa.com/sp01)
+}
+]{Unknown/Unknown.pdf}\newpage
+
+\includepdf[pages=2-,frame,scale=.75,
+pagecommand={}
+]{Unknown/Unknown.pdf}\newpage
+
+\subsection{Photos du projet Unknown}
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\textwidth]{Unknown/photo/IMG_1.jpg}
+        \caption{Vu de dessus}
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\textwidth]{Unknown/photo/IMG_2.jpg}
+        \caption{Vu de dessous}
+    \end{subfigure}
+    \caption{Photos du projet Unknown}
+    \label{anx:fig:unknown}
+\end{figure}

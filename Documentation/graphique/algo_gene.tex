@@ -1,0 +1,76 @@
+\tikzstyle{line} =[very thick, rounded corners=5pt]
+\tikzstyle{arrow}=[line, ->, >=latex]
+
+\tikzstyle{size}=[minimum width=2cm, minimum height=1cm]
+\tikzstyle{bx}=[draw, size, align=center]
+
+\tikzstyle{actionbx}=[bx, rounded corners=5pt]
+\tikzstyle{logbx}   =[bx, rounded corners=5pt, minimum width=6cm]
+\tikzstyle{objbx}   =[bx]
+\tikzstyle{onoffbx} =[bx, ellipse]
+\tikzstyle{ifelsebx}=[bx, diamond, aspect=2.5]
+\tikzstyle{fluxbx}  =[draw, diamond, aspect=1, minimum width=1cm, minimum height=1cm]
+\tikzstyle{inbx}    =[bx, signal , signal from=west   , signal to=nowhere]
+\tikzstyle{outbx}   =[bx, signal , signal from=nowhere, signal to=east]
+
+\begin{tikzpicture}[scale=1]
+    \node[onoffbx]  (A) at ( 0.0, +1.3) {Début};
+    \node[actionbx] (B) at ( 0.0, +0.0) {Initialisation\\composants};
+    \node[actionbx] (C) at ( 0.0, -1.4) {Initialisation\\communication LoRa};
+    \node[actionbx] (D) at (-2.5, -3.5) {Attente\\commande armement\\séquence vol};
+    \node[actionbx] (E) at (-2.5, -5.5) {Attente\\détection lancement};
+
+    \node[logbx, rotate=90] (log) at ( 2.5, -5.6) {Envoie de messages d'informations\\de l'état de l'OMEGAAA par LoRa};
+    
+    \node[actionbx] (F) at (-2.5, -7.5) {Mesure\\Analyse/traitement\\Enregistrement\\Envoie par LoRa};
+    \draw[dotted, thick] (-4.1, -7.06) -- (-0.9, -7.06);
+    \draw[dotted, thick] (-4.1, -7.50) -- (-0.9, -7.50);
+    \draw[dotted, thick] (-4.1, -7.93) -- (-0.9, -7.93);
+    
+    \node[ifelsebx] (H) at (-2.5, -9.6) {Atterri ?};
+
+    \node[actionbx] (I) at (-2.5, -11.3) {Gestion consommation\\allégées};
+    \node[actionbx] (J) at (+1.5, -11.3) {Envoie par LoRa\\de la position GPS};
+    
+    \node[ifelsebx] (K) at (5, -11.3) {Récupéré ?};
+
+    \node[actionbx] (L) at (2.0, -12.7) {Envoie des données \\ enregistrées};
+
+    \node[onoffbx]  (M) at (-1.0, -12.7) {Fin};
+
+    \draw[arrow] (A)  -- (B);
+    \draw[arrow] (B)  -- (C);
+    \draw[arrow] (C) |- (-1, -2.2) -| (D);
+    \draw[arrow] (C) |- (+1, -2.2) -| (log);
+
+    \draw[arrow] (D) -| (-4.75, -3.5) |- (-3.5, -2.30) -| (D);
+    \draw[arrow] (D) -- (E);
+
+    \draw[arrow] (E) -| (-4.75, -5.0) |- (-3.5, -4.5) -| (E);
+
+    \draw[arrow] (E) -- (F);
+    \draw[arrow] (F) -- (H);
+    \draw[arrow] (H) -- ++(2.5, 0) node[pos=0.5, above] {Non} -| ++(0, 1) |- ++(-1, 2.35) -| (F);
+    \draw[arrow, dotted] (log) |- ++(-1, -3.15) -| (H);
+    \draw[arrow, dotted] (H) -| ++(6.25, 2) |- ++(-1, 5.35) -| (log);
+
+    \draw[arrow] (H) -- (I) node[pos=0.5, left] {Oui};
+    \draw[arrow] (I) -- (J);
+    \draw[arrow] (J) -- (K);
+    \draw[arrow] (K) |- ++(-1, 0.85) node[pos=0.5, right] {Non} -| ++(-4.45, -0.85) |- (J);
+
+    \draw[arrow] (K) |- (L) node[pos=0.3, right] {Oui};
+    \draw[arrow] (L) -- (M);
+
+    \draw[dashed, very thick] (-6, -2.00) -- (6, -2.00);
+    \draw[dashed, very thick] (-6, -6.15) -- (1, -6.15);
+    \draw[dashed, very thick] (-6, -10.2) -- (6, -10.2);
+    \draw[dashed, very thick] (-6, -12.0) -- (6, -12.0);
+    
+    \draw[color=red] (-5,   0.00) node[above, rotate=90] {Initialisation};
+    \draw[color=red] (-5,  -4.00) node[above, rotate=90] {Prévol};
+    \draw[color=red] (-5,  -8.25) node[above, rotate=90] {Vol};
+    \draw[color=red] (-5, -11.10) node[above, rotate=90] {Postvol};
+    \draw[color=red] (-5, -13.00) node[above           ] {Récupération};
+
+\end{tikzpicture}

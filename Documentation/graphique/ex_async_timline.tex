@@ -1,0 +1,55 @@
+\begin{tikzpicture}[scale=1.2]
+
+    % \draw [help lines] (-1, 0) grid (2, 12);
+
+    \draw node at (-0.7, 11.75) {tâches};
+    \draw node at (-0.7, 11.50) {actives};
+    \draw node at ( 1, 11.595) {Résumé};
+
+    % \draw [line width=0.5mm] (-1.2, 11.25) -- (2, 11.25);
+    \draw (-1.2, 11.3) -- (2, 11.3);
+
+    \draw  (0, 12) -- (0, 11.3);
+    \draw [line width=2mm, dashed] (0, 11.3) -- (0, 11);
+    \draw [line width=2mm        ] (0, 11) -- (0,  8);
+    \draw [line width=2mm, dashed] (0,  8) -- (0,  7);
+    \draw [line width=2mm        ] (0,  7) -- (0,  5);
+    \draw [line width=2mm, dashed] (0,  5) -- (0,  4);
+    \draw [line width=2mm        ] (0,  4) -- (0,  1);
+    \draw [fill=black] (-0.3, 1) -- (0.3, 1) -- (0, 0.5) -- cycle;
+
+    \draw [dashed] (-1, 11) -- (1.5, 11) node [right] {$t=   0 \ ms$};
+    \draw [dashed] (-1, 10) -- (1.5, 10) node [right] {$t=   1 \ ms$};
+    \draw [dashed] (-1,  9) -- (1.5,  9) node [right] {$t=   2 \ ms$};
+    \draw [dashed] (-1,  8) -- (1.5,  8) node [right] {$t=   3 \ ms$};
+    \draw [dashed] (-1,  7) -- (1.5,  7) node [right] {$t= 200 \ ms$};
+    \draw [dashed] (-1,  6) -- (1.5,  6) node [right] {$t= 201 \ ms$};
+    \draw [dashed] (-1,  5) -- (1.5,  5) node [right] {$t= 202 \ ms$};
+    \draw [dashed] (-1,  4) -- (1.5,  4) node [right] {$t=5000 \ ms$};
+    \draw [dashed] (-1,  3) -- (1.5,  3) node [right] {$t=5001 \ ms$};
+    \draw [dashed] (-1,  2) -- (1.5,  2) node [right] {$t=5002 \ ms$};
+    \draw [dashed] (-1,  1) -- (1.5,  1) node [right] {$t=5003 \ ms$};
+
+    \draw [dotted] (-0.2, 10.7) node[left]{-task1} -- (0.3, 10.7) node[right]{Créer tâche 2};
+
+    \draw [dotted] (-0.2,  9.7) node[left]{-task1} -- (0.3,  9.7) node[right]{Attend};
+    \draw [dotted] (-0.2,  9.4) node[left]{-task2} -- (0.3,  9.4) node[right]{Attend};
+
+    \draw [dotted] (-0.2,  8.7) node[left]{-task1} -- (0.3,  8.7) node[right]{Attend};
+    \draw [dotted] (-0.2,  8.4) node[left]{-task2} -- (0.3,  8.4) node[right]{Attend};
+
+    \draw [dotted] (-0.2,  6.7) node[left]{-task1} -- (0.3,  6.7) node[right]{Affiche "."};
+    \draw [dotted] (-0.2,  6.4) node[left]{-task2} -- (0.3,  6.4) node[right]{Attend};
+
+    \draw [dotted] (-0.2,  5.7) node[left]{-task1} -- (0.3,  5.7) node[right]{Attend};
+    \draw [dotted] (-0.2,  5.4) node[left]{-task2} -- (0.3,  5.4) node[right]{Attend};
+
+    \draw [dotted] (-0.2,  3.7) node[left]{-task1} -- (0.3,  3.7) node[right]{Attend};
+    \draw [dotted] (-0.2,  3.4) node[left]{-task2} -- (0.3,  3.4) node[right]{Met flag à 1, fin};
+
+    \draw [dotted] (-0.2,  2.7) node[left]{-task1} -- (0.3,  2.7) node[right]{Détecte flag à 1, fin};
+
+    \draw          (-0.2,  1.5) node[left]{(fini)};
+
+
+\end{tikzpicture}

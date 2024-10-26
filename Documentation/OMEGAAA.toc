@@ -1,0 +1,23 @@
+\babel@toc {french}{}\relax 
+\contentsline {section}{\numberline {}Mise en contexte}{4}{figure.caption.1}%
+\contentsline {section}{\numberline {1}Objectifs}{5}{section.1}%
+\contentsline {section}{\numberline {2}Projet STM}{6}{section.2}%
+\contentsline {section}{\numberline {3}Programmation asynchrone}{7}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Une tâche (TASK)}{7}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}L'ordonanceur (SCHEDULER)}{7}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Exemple 1 : Ordonancement des tâches}{8}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Implémentation}{9}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Exemple 2 : Création et logique d'une tâches}{10}{subsection.3.5}%
+\contentsline {section}{\numberline {4}Composants externes}{13}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Vue d'ensemble}{13}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Communication entre composants}{14}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}Présentation du concepte}{14}{subsubsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2}Les tâches de communications}{17}{subsubsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.3}Mémoire Flash W25Q\_XXX}{18}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}Déclaration des structures et des fonctions}{18}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}Exemple d'utilisation}{21}{subsubsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.4}Flash Stream}{23}{subsection.4.4}%
+\contentsline {subsubsection}{\numberline {4.4.1}Déclaration des structures et des fonctions}{23}{subsubsection.4.4.1}%
+\contentsline {section}{\numberline {A}Projet Unknown}{25}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Rapport du projet}{25}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}Photos du projet Unknown}{33}{subsection.A.2}%

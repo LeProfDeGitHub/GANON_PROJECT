@@ -1,0 +1,57 @@
+\subsection{Implémentation}
+\label{subsec:implementation}
+
+Ci-dessous est présenté le code source de la déclaration des fonctions principales associées à l'ordonanceur
+et aux tâches. L'implémentation même de ces fonctions n'est pas présentée ici puisque jugé trop longue et
+non essentielle à la compréhension du concept. L'implémentation complète est disponible dans le code source
+du projet.
+
+\begin{lstlisting}[style=prog, frame=shadowbox, caption={Définition des tâches et de l'ordonanceur (scheduler.h)}, label={lst:async_h},
+    emph={[1]ASYNC_CONTEXT_DEFAULT_BYTES_SIZE, MAX_TASKS_NBR, init_scheduler, add_task, kill_task, run_task,
+    run_scheduler}, emphstyle={[1]\color{C}},
+    emph={[2]SCHEDULER, TASK, __task_func_t, task_func_t}, emphstyle={[2]\color{E}}]
+#include <stdbool.h>
+#include "stm32f4xx_hal.h"
+
+#define ASYNC_CONTEXT_DEFAULT_BYTES_SIZE 64
+#define MAX_TASKS_NBR 50
+
+// fonction a executer (prend en param le scheduler et le contexte)
+typedef void(*__task_func_t)(void*, void*);
+
+typedef struct {
+    __task_func_t   func;
+    size_t          idx;
+    bool           *is_done;
+    uint8_t         context[ASYNC_CONTEXT_DEFAULT_BYTES_SIZE];
+} TASK;
+
+typedef struct {
+    size_t   length;
+    size_t   current_idx;
+    size_t   nbr_has_run_task;
+    TASK    *tasks[MAX_TASKS_NBR];
+    bool     running[MAX_TASKS_NBR];
+} SCHEDULER;
+
+typedef void(*task_func_t)(SCHEDULER*, TASK*);
+
+
+// Initialise l'ordonanceur notamment en allouant la zone mémoire pour les tâches.
+void init_scheduler(SCHEDULER *scheduler);
+
+// Initialise une tâche, la place dans la zone mémoire allouée, l'ajoute à la liste
+// des tâches, met à jour le tableau running (active la tâche), les variables de
+// l'ordonanceur et renvoie l'addresse mémoire de la tâche.
+TASK *add_task(SCHEDULER *scheduler, task_func_t func);
+
+// Met à jour le tableau running (désactive la tâche), les variables de l'ordonanceur
+// et le drapeau "*is\_done" de la tâche s'il est défini.
+void kill_task(SCHEDULER *scheduler, TASK *task);
+
+// Exécute une tâche
+void run_task(SCHEDULER *scheduler, TASK *task);
+
+// Exécute la tâche suivante
+void run_scheduler(SCHEDULER *scheduler);
+\end{lstlisting}

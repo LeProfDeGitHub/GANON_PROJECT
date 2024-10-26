@@ -1,0 +1,92 @@
+\subsection{Flash Stream}
+\label{subsec:flash_stream}
+
+Le module \texttt{flash\_stream} est un composant logiciel permettant de gérer la
+lecture et l'écriture de données dans une mémoire flash tel que la W25Q tout en
+gérant les pointeurs de lecture et d'écriture.\\
+
+Les fichiers correspondants à ce module sont les suivants:
+\begin{itemize}
+    \item \texttt{flash\_stream.h}
+    \item \texttt{flash\_stream.c}
+\end{itemize}
+
+\subsubsection{Déclaration des structures et des fonctions}
+
+\subsubsubsection*{\texttt{FLASH\_STREAM}}
+
+La structure \texttt{FLASH\_STREAM} contient un pointeur vers un composant W25Q
+ainsi que les pointeurs de lecture et d'écriture.\\
+
+\begin{lstlisting}[style=prog, frame=shadowbox, label={lst:fs_struct},
+    emph={[1]flash_stream_init}, emphstyle={[1]\color{C}},
+    emph={[2]FLASH_STREAM, W25Q_Chip}, emphstyle={[2]\color{E}}]
+typedef struct FLASH_STREAM {
+    W25Q_Chip   *flash_chip;
+
+    uint32_t     write_ptr;
+    uint32_t     read_ptr;
+} FLASH_STREAM;
+
+void flash_stream_init(FLASH_STREAM* stream, W25Q_Chip* flash_chip);
+\end{lstlisting}
+
+Les pointeurs de lecture et d'écriture sont initialisés à 0 lors de l'appel de la
+fonction \texttt{flash\_stream\_init}.
+
+\subsubsubsection*{\texttt{ASYNC\_fs\_read} et \texttt{ASYNC\_fs\_write}}
+
+Les tâches \texttt{ASYNC\_fs\_read} et \texttt{ASYNC\_fs\_write} permettent
+respectivement de lire et d'écrire des données dans une mémoire flash. Leur
+contexte étant similaire, ils sont initialisés par la même fonction
+\texttt{ASYNC\_fs\_read\_write\_init}.\\
+
+\begin{lstlisting}[style=prog, frame=shadowbox, label={lst:fs_rw},
+    emph={[1]ASYNC_fs_read_write_init, ASYNC_fs_read, ASYNC_fs_write}, emphstyle={[1]\color{C}},
+    emph={[2]FLASH_STREAM, TASK, SCHEDULER}, emphstyle={[2]\color{E}}]
+void ASYNC_fs_read_write_init(TASK *task, FLASH_STREAM *stream,
+                              uint8_t *data, uint16_t len);
+void ASYNC_fs_read(SCHEDULER *scheduler, TASK *self);
+void ASYNC_fs_write(SCHEDULER *scheduler, TASK *self);
+\end{lstlisting}
+
+Une fois appelées pour la première fois, les tâches \texttt{ASYNC\_fs\_read} et
+\texttt{ASYNC\_fs\_write} incrémentent respectivement les pointeurs de lecture et
+d'écriture de la taille des données lues ou écrites. Elle appellent ensuite la
+tâche \texttt{ASYNC\_W25Q\_ReadData} ou \texttt{ASYNC\_W25Q\_WriteData} puis se
+terminent sans attendre la fin de l'opération. Cependant, elles transmettent à
+la tâche précédament générée le pointeur vers le booléen \texttt{self->is\_done}
+ce qui permet à la tâche appelante de détecter la fin de l'opération. Puisque aucune
+copie de données n'est effectuée, le tableau \texttt{data} doit rester valide
+jusqu'à la fin de l'opération.
+
+\newpage
+
+\subsubsubsection*{\texttt{ASYNC\_fs\_read\_floats} et \texttt{ASYNC\_fs\_write\_floats}}
+
+Les tâches \texttt{ASYNC\_fs\_read\_floats} et \texttt{ASYNC\_fs\_write\_floats}
+sont des versions des tâches \texttt{ASYNC\_fs\_read} et \texttt{ASYNC\_fs\_write}
+spécialisées pour la lecture et l'écriture de données de type \texttt{float}. Tous
+comme ces dernières, elles sont initialisées par la même fonction
+\texttt{ASYNC\_fs\_read\_write\_floats\_init}.\\
+
+\begin{lstlisting}[style=prog, frame=shadowbox, label={lst:fs_rw_floats},
+    emph={[1]ASYNC_fs_read_write_floats_init, ASYNC_fs_write_floats, ASYNC_fs_read_floats}, emphstyle={[1]\color{C}},
+    emph={[2]FLASH_STREAM, TASK, SCHEDULER}, emphstyle={[2]\color{E}}]
+void ASYNC_fs_read_write_floats_init(TASK *task, FLASH_STREAM *stream,
+                                     float *data, uint16_t len);
+void ASYNC_fs_read_floats(SCHEDULER *scheduler, TASK *self);
+void ASYNC_fs_write_floats(SCHEDULER *scheduler, TASK *self);
+\end{lstlisting}
+
+Du fait de la conversion des données de type \texttt{float} en tableau de type
+\texttt{uint8\_t}, les tâches \texttt{ASYNC\_fs\_read\_floats} et
+\texttt{ASYNC\_fs\_write\_floats} nécessitent l'utilisation de buffers internes
+pour stocker les données converties. Ces buffers sont alloués dynamiquement lors
+de l'appel de la fonction d'initialisation et libérés à la fin de l'opération.
+Contrairement aux tâches \texttt{ASYNC\_fs\_read} et \texttt{ASYNC\_fs\_write},
+les tâches \texttt{ASYNC\_fs\_read\_floats} et \texttt{ASYNC\_fs\_write\_floats}
+restent actives jusqu'à la fin de l'opération (nécessité de maintenir les buffers
+internes existant).\\
+
+[TO BE CONTINUED...]
